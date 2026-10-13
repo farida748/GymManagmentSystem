@@ -1,7 +1,7 @@
 ﻿using GymManagment.BLL.Services.Interfaces;
 using GymManagment.BLL.ViewModels.MemberViewModel;
 using GymManagment.DAL.Data.Models;
-using GymManagment.DAL.Repositories.Classes;
+using GymManagment.DAL.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +12,9 @@ namespace GymManagment.BLL.Services.Classes
 {
     public class MemberService : IMemberService
     {
-        private readonly GenericRepository<Member> _memberRepository;
+        private readonly IGenericRepository<Member> _memberRepository;
 
-        public MemberService(GenericRepository<Member> memberRepository)
+        public MemberService(IGenericRepository<Member> memberRepository)
         {
             _memberRepository = memberRepository;
         }

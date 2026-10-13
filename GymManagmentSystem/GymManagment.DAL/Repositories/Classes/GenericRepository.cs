@@ -36,11 +36,11 @@ namespace GymManagment.DAL.Repositories.Classes
         public async Task<IEnumerable<TEntity>> GetAllAsync(bool Tracking=false, CancellationToken ct = default)
         {
             IQueryable<TEntity> query = Tracking ? _dbSet : _dbSet.AsNoTracking();
-            return await query.ToListAsync();
+            return await query.ToListAsync(ct);
         }
 
         public async Task<TEntity?> GetByIdAsync(int id, CancellationToken ct = default) => 
-            await _dbContext.Set<TEntity>().FindAsync(id);
+            await _dbSet.FindAsync([id], ct);
         
 
         public async Task<int> UpdateAsync(TEntity entity)
