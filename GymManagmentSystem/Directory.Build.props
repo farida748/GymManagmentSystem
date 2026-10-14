@@ -1,0 +1,12 @@
+<Project>
+  <!--
+    OneDrive marks files as cloud files, and Windows Smart App Control blocks
+    assemblies built there ("An Application Control policy has blocked this file").
+    When the solution lives under OneDrive, build to %LOCALAPPDATA% instead.
+  -->
+  <PropertyGroup Condition="$(MSBuildThisFileDirectory.Contains('OneDrive'))">
+    <GymBuildRoot>$(LOCALAPPDATA)\GymManagmentSystem\build\</GymBuildRoot>
+    <BaseOutputPath>$(GymBuildRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(GymBuildRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>

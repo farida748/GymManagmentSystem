@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,6 +37,14 @@ namespace GymManagment.DAL.Repositories.Classes
         public async Task<IEnumerable<TEntity>> GetAllAsync(bool Tracking=false, CancellationToken ct = default)
         {
             IQueryable<TEntity> query = Tracking ? _dbSet : _dbSet.AsNoTracking();
+            return await query.ToListAsync(ct);
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllWithIncludesAsync(CancellationToken ct = default, params Expression<Func<TEntity, object>>[] includes)
+        {
+            IQueryable<TEntity> query = _dbSet.AsNoTracking();
+            foreach (var include in includes)
+                query = query.Include(include);
             return await query.ToListAsync(ct);
         }
 
