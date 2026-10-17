@@ -28,6 +28,11 @@ namespace GymManagment.DAL.Repositories.Classes
            return await _dbContext.SaveChangesAsync();   
         }
 
+        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+           return  _dbSet.AsNoTracking().AnyAsync(predicate, cancellationToken);
+        }
+
         public async Task<int> DeleteAsync(TEntity entity)
         {
             _dbSet.Remove(entity);
