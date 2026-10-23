@@ -15,7 +15,9 @@ namespace GymManagment.DAL.Repositories.Interfaces
         Task<IEnumerable<TEntity>> GetAllWithIncludesAsync(CancellationToken ct = default, params Expression<Func<TEntity, object>>[] includes);
         Task<int> AddAsync(TEntity entity);
         Task<int> UpdateAsync(TEntity entity);
-        Task<int> DeleteAsync(TEntity entity);
+        Task<int> DeleteAsync(TEntity entity,CancellationToken cancellationToken);
         Task<bool> AnyAsync(Expression<Func<TEntity,bool>> predicate,CancellationToken cancellationToken=default);
+
+        Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, bool tracking = false, CancellationToken cancellationToken = default);
     }
 }

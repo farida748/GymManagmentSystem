@@ -4,6 +4,14 @@
     assemblies built there ("An Application Control policy has blocked this file").
     When the solution lives under OneDrive, build to %LOCALAPPDATA% instead.
   -->
+  <PropertyGroup>
+    <!--
+      Smart App Control also blocks the unsigned apphost (GymManagment.PL.exe).
+      Without it, Visual Studio launches the app through the signed dotnet.exe.
+    -->
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+
   <PropertyGroup Condition="$(MSBuildThisFileDirectory.Contains('OneDrive'))">
     <GymBuildRoot>$(LOCALAPPDATA)\GymManagmentSystem\build\</GymBuildRoot>
     <BaseOutputPath>$(GymBuildRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
