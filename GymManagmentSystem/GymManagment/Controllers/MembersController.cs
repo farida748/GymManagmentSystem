@@ -105,7 +105,7 @@ namespace GymManagment.PL.Controllers
             }
             return View();
         }
-
+        [HttpPost]
         public async Task<IActionResult> DeleteConfirmedAsync([FromRoute]int id,CancellationToken cancellationToken)
         {
             var result= await _memberservice.RemoveMemberAsync(id, cancellationToken);
