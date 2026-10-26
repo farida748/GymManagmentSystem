@@ -1,18 +1,26 @@
 ﻿using AutoMapper;
 using GymManagment.BLL.ViewModels.MemberViewModel;
+using GymManagment.BLL.ViewModels.SessionViewModel;
 using GymManagment.DAL.Data.Models;
 namespace GymManagment.BLL
 {
-   public class MappingProfile : Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-             CreateMap<Member, MemberViewModel>()
-                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth.ToString()))
-                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Adress.BuildingNumber + "-" + src.Adress.Street + "-" + src.Adress.City));
-             CreateMap<HealthRecord, HealthRecordViewModel>().ReverseMap();
+            MapMember();
+            MapSession();
+
+        }
+
+        private void MapMember()
+        {
+            CreateMap<Member, MemberViewModel>()
+                   .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth.ToString()))
+                   .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Adress.BuildingNumber + "-" + src.Adress.Street + "-" + src.Adress.City));
+            CreateMap<HealthRecord, HealthRecordViewModel>().ReverseMap();
             CreateMap<Member, MemberToUpdateViewModel>()
-                
+
                 .ForMember(dest => dest.BuildingNumber, opt => opt.MapFrom(src => src.Adress.BuildingNumber))
                 .ForMember(dest => dest.Street, opt => opt.MapFrom(src => src.Adress.Street))
                 .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.Adress.City));
@@ -42,8 +50,20 @@ namespace GymManagment.BLL
                     Street = src.Street,
                     City = src.City
                 }))
-                .ForMember(dest => dest.HealthRecord, opt => opt.MapFrom(src=>src.HealthRecordViewModel)
+                .ForMember(dest => dest.HealthRecord, opt => opt.MapFrom(src => src.HealthRecordViewModel)
                 );
+
+
+        }
+        private void MapSession()
+        {
+            CreateMap<CreateSessionViewModel, Session>();
+            CreateMap<Session, SessionViewModel>()
+                .ForMember(dest => dest.TrainerName, opt => opt.MapFrom(src => src.Trainer.Name))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
+
+            CreateMap<Category, CategorySelectViewModel>();
+            CreateMap<Trainer, TrainerSelectViewModel>();
 
         }
     }
