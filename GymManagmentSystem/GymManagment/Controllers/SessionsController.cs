@@ -34,14 +34,14 @@ namespace GymManagment.PL.Controllers
                 return View(model);
             }
             var result = await _sessionService.CreateSessionAsync(model, cancellationToken);
-            if (result)
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Session created successfully.";
                 return RedirectToAction(nameof(Index));
             }
             else
             {
-                TempData["ErrorMessage"] = "Failed to create session. Please try again.";
+                TempData["ErrorMessage"] = result.error;
                 await PopulateDropDownsAsync();
                 return View(model);
             }

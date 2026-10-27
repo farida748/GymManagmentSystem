@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GymManagment.BLL.Common;
 using GymManagment.BLL.Services.Interfaces;
 using GymManagment.BLL.ViewModels.SessionViewModel;
 using GymManagment.DAL.Data.Models;
@@ -22,26 +23,27 @@ namespace GymManagment.BLL.Services.Classes
             _mapper = mapper;   
         }
 
-        public async Task<bool> CreateSessionAsync(CreateSessionViewModel model, CancellationToken cancellationToken = default)
+        public async Task<Result> CreateSessionAsync(CreateSessionViewModel model, CancellationToken cancellationToken = default)
         {
-            if (model.EndDate <= model.StartDate) return false;
-            if(model.StartDate < DateTime.Now) return false;
-            if(model.Capacity <1 || model.Capacity>25) return false;
+            if (model.EndDate <= model.StartDate) return Result.ValidationError("End date must be after start date");
+            if(model.StartDate < DateTime.Now) return Result.ValidationError("Start date must be in the future");
+            if(model.Capacity <1 || model.Capacity>25) return Result.ValidationError("Capacity must be between 1 and 25");
 
             var trainer=await _unitofWork.GetRepository<Trainer>().GetByIdAsync(model.TrainerId, cancellationToken);
-            if(trainer == null) return false;
+            if(trainer == null) return Result.NotFound("Trainer not found");
 
             var category = await _unitofWork.GetRepository<Category>().GetByIdAsync(model.CategoryId, cancellationToken);
-            if(category == null) return false;
+            if(category == null) return Result.NotFound("Category not found");
 
             var isvalid=Enum.TryParse<Speciality>(category.CategoryName,true, out var Categoryspeciality);
-            if(!isvalid|| trainer.Speciality != Categoryspeciality) return false;
+            if(!isvalid|| trainer.Speciality != Categoryspeciality) return Result.ValidationError
+                    ("Incompatible trainer and category");
 
             var session=_mapper.Map<Session>(model);
             _unitofWork.GetRepository<Session>().Add(session);
             var result=await _unitofWork.SaveChangesAsync(cancellationToken);
 
-            return result>0;
+            return result>0 ? Result.Ok() : Result.Fail("Failed to create session");
         }
 
         public async Task<IEnumerable<SessionViewModel>> GetAllSessionsAsync(CancellationToken ct = default)
