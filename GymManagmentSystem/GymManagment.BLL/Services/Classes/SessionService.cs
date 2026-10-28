@@ -91,11 +91,65 @@ namespace GymManagment.BLL.Services.Classes
             return Result<SessionViewModel>.Ok(mappedSession);
         }
 
+        public async Task<Result<UpdateSessionViewModel>> GetSessionForUpdateByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var session= await _unitofWork.GetRepository<Session>().GetByIdAsync(id, cancellationToken);
+            if (session == null) return Result<UpdateSessionViewModel>.NotFound("Session not found");
+            if(session.StartDate < DateTime.Now) return Result<UpdateSessionViewModel>.Fail("Cannot update session that has already started");
+            var bookingslots = await _unitofWork.SessionRepository.GetCountOfBookingSlotsAsync(session.Id, cancellationToken);
+            if(bookingslots > 0) return Result<UpdateSessionViewModel>.Fail("Cannot update session that has bookings");
+
+            var mappedSession = _mapper.Map<UpdateSessionViewModel>(session);
+            return Result<UpdateSessionViewModel>.Ok(mappedSession);
+        }
+
         public async Task<IEnumerable<TrainerSelectViewModel>> GetTrainerForDropDownAsync(CancellationToken cancellationToken = default)
         {
             var trainers = await _unitofWork.GetRepository<Trainer>().GetAllAsync(ct: cancellationToken);
             var mappedTrainers = _mapper.Map<IEnumerable<TrainerSelectViewModel>>(trainers);
             return mappedTrainers;
+        }
+
+        public async Task<Result> RemoveSessionAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var session = await _unitofWork.GetRepository<Session>().GetByIdAsync(id, cancellationToken);
+            if (session == null) return Result.NotFound("Session is Not Found");
+            if (session.EndDate >= DateTime.Now) return Result.ValidationError("Can Not Delete Session That has not Ended Yet");
+            var bookingslots = await _unitofWork.SessionRepository.GetCountOfBookingSlotsAsync(session.Id, cancellationToken);
+            if (bookingslots > 0) return Result.Fail("Can Not Delete Session That Has Bookings");
+            _unitofWork.GetRepository<Session>().Delete(session);
+            var result = await _unitofWork.SaveChangesAsync(cancellationToken);
+            return result > 0 ? Result.Ok() : Result.Fail("Session cannot be Deleted");
+        }
+
+        public async Task<Result> UpdateSessionAsync(int id, UpdateSessionViewModel model, CancellationToken cancellationToken = default)
+        {
+            var session = await  _unitofWork.GetRepository<Session>().GetByIdAsync(id, cancellationToken);
+            if (session == null) return Result.NotFound("Not Found");
+
+            if (session.StartDate < DateTime.Now) return Result.Fail("Cannot update session that has already started");
+            if (session.EndDate < session.StartDate) return Result.ValidationError("End Date Must Be After Start Date ");
+
+            var bookingslots = await _unitofWork.SessionRepository.GetCountOfBookingSlotsAsync(session.Id, cancellationToken);
+            if (bookingslots > 0) return Result.Fail("Cannot update session that has bookings");
+
+            if (session.StartDate < DateTime.Now) return Result.Fail("Cannot update session that has already started");
+
+            var trainer = await _unitofWork.GetRepository<Trainer>().GetByIdAsync(model.TrainerId, cancellationToken);
+            if (trainer == null) return Result.NotFound("Trainer not found");
+
+            var category = await _unitofWork.GetRepository<Category>().GetByIdAsync(session.CategoryId, cancellationToken);
+           
+            var isvalid = Enum.TryParse<Speciality>(category?.CategoryName, true, out var Categoryspeciality);
+            if (!isvalid || trainer.Speciality != Categoryspeciality) return Result.ValidationError
+                    ("Incompatible trainer and category");
+
+            _mapper.Map(model, session);
+            session.UpdatedAt = DateTime.Now;
+            _unitofWork.GetRepository<Session>().Update(session);
+            var result = await _unitofWork.SaveChangesAsync(cancellationToken);
+
+            return result > 0 ? Result.Ok() : Result.Fail("Session cannot be Updated");
         }
     }
 }

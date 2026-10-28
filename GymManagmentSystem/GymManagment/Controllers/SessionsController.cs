@@ -63,6 +63,81 @@ namespace GymManagment.PL.Controllers
             }
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id,CancellationToken cancellationToken=default)
+        {
+          var result= await _sessionService.GetSessionForUpdateByIdAsync(id, cancellationToken);
+            if (result.Success)
+            {
+                ViewBag.Trainers = new SelectList(await _sessionService.GetTrainerForDropDownAsync(), "Id", "Name");
+                return View(result.Data);
+            }
+            TempData["ErrorMessage"] = result.Error;
+            return RedirectToAction(nameof(Index));
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id,UpdateSessionViewModel model,CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Trainers = new SelectList(await _sessionService.GetTrainerForDropDownAsync(), "Id", "Name");
+                return View(model);
+
+            }
+            var result = await _sessionService.UpdateSessionAsync(id, model, ct);
+            if (result.Success)
+            {
+                TempData["SucessMessage"] = "Session Updated";
+           
+                return RedirectToAction(nameof(Index));
+            }
+            TempData["ErrorMessage"] = result.Error;
+            ViewBag.Trainers = new SelectList(await _sessionService.GetTrainerForDropDownAsync(), "Id", "Name");
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+        {
+            var result = await _sessionService.GetSessionByIdAsync(id, cancellationToken);
+            if (result.Success)
+            {
+               return View(result.Data);
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Error;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        [HttpPost]
+         public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken = default)
+        {
+            var result = await _sessionService.RemoveSessionAsync(id, cancellationToken);
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = "Session deleted successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Error;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+
+
+
         private async Task PopulateDropDownsAsync()
         {
             ViewBag.Trainers = new SelectList(await _sessionService.GetTrainerForDropDownAsync(), "Id", "Name");
