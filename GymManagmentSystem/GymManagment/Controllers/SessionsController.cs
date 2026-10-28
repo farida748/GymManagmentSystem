@@ -41,9 +41,25 @@ namespace GymManagment.PL.Controllers
             }
             else
             {
-                TempData["ErrorMessage"] = result.error;
+                TempData["ErrorMessage"] = result.Error;
                 await PopulateDropDownsAsync();
                 return View(model);
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
+        {
+            var result = await _sessionService.GetSessionByIdAsync(id, cancellationToken);
+            if (result.Success)
+            {
+                return View(result.Data);
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Error;
+                return RedirectToAction(nameof(Index));
             }
         }
 

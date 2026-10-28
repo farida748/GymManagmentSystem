@@ -64,6 +64,9 @@ namespace GymManagment.BLL
 
             CreateMap<Category, CategorySelectViewModel>();
             CreateMap<Trainer, TrainerSelectViewModel>();
+            CreateMap<Session, SessionViewModel>()
+                .ForMember(dest => dest.TrainerName, opt => opt.MapFrom(src => src.Trainer.Name))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName));
 
         }
     }
