@@ -7,18 +7,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GymManagment.DAL.Configurations
+namespace GymManagment.DAL.Data.Configurations
 {
-    internal class TrainerConfiguration
-     : GymUserConfiguration<Trainer>, IEntityTypeConfiguration<Trainer>
+    internal class BookingConfiguration : IEntityTypeConfiguration<Booking>
     {
-        public new void Configure(EntityTypeBuilder<Trainer> builder)
+        public void Configure(EntityTypeBuilder<Booking> builder)
         {
+           builder.Ignore(x=>x.Id);
+
+           builder.HasKey(x => new { x.MemberId, x.SessionId });
+
             builder.Property(x => x.CreatedAt)
-                .HasColumnName("HiredDate")
+                .HasColumnName("BookingDate")
                 .HasDefaultValueSql("GETDATE()");
 
-            base.Configure(builder);
+
+
+
         }
     }
-    }
+}

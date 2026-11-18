@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GymManagment.DAL.Configurations
+namespace GymManagment.DAL.Data.Configurations
 {
     internal class MemberShipConfiguration : IEntityTypeConfiguration<MemberShip>
     {

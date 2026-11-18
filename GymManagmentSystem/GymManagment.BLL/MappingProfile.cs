@@ -2,7 +2,9 @@
 using GymManagment.BLL.ViewModels.MemberViewModel;
 using GymManagment.BLL.ViewModels.PlanViewModel;
 using GymManagment.BLL.ViewModels.SessionViewModel;
+using GymManagment.BLL.ViewModels.TrainerViewModel;
 using GymManagment.DAL.Data.Models;
+using System.Net;
 namespace GymManagment.BLL
 {
     public class MappingProfile : Profile
@@ -12,6 +14,7 @@ namespace GymManagment.BLL
             MapMember();
             MapSession();
             MapPlan();
+            MapTrainer();
 
         }
 
@@ -83,6 +86,44 @@ namespace GymManagment.BLL
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.Name, opt => opt.Ignore());
            
+        }
+
+        private void MapTrainer()
+        {
+            CreateMap<Trainer, TrainerViewModel>()
+                .ForMember(dest=>dest.Specialization,opt=>opt.MapFrom(src=>src.Speciality));
+            CreateMap<CreateTrainerViewModel, Trainer>()
+                  .ForMember(dest => dest.Speciality, opt => opt.MapFrom(src => src.Specialties))
+                 
+
+    .AfterMap((src, dest) =>
+    {
+        dest.Adress = new Adress
+        {
+            BuildingNumber = src.BuildingNumber,
+            Street = src.Street,
+            City = src.City
+        };
+    });
+
+            CreateMap<Trainer, TrainerDetailsViewModel>()
+                .ForMember(dest => dest.Specialization, opt => opt.MapFrom(src => src.Speciality))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Adress.BuildingNumber + "-" + src.Adress.Street + "-" + src.Adress.City));
+
+            CreateMap<Trainer, UpdateTrainerViewModel>()
+    .ForMember(d => d.Specialties, o => o.MapFrom(s => s.Speciality))
+    .ForMember(d => d.BuildingNumber, o => o.MapFrom(s => s.Adress.BuildingNumber))
+    .ForMember(d => d.City, o => o.MapFrom(s => s.Adress.City))
+    .ForMember(d => d.Street, o => o.MapFrom(s => s.Adress.Street));
+
+            CreateMap<UpdateTrainerViewModel, Trainer>()
+                .ForMember(dest => dest.Speciality, opt => opt.MapFrom(src => src.Specialties))
+                .ForMember(dest => dest.Name, opt => opt.Ignore())
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+
+
+          
+                
         }
     }
 }

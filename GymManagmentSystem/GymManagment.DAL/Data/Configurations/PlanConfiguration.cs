@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 
-namespace GymManagment.DAL.Configurations
+namespace GymManagment.DAL.Data.Configurations
 {
     internal class PlanConfiguration : IEntityTypeConfiguration<Plan>
     {

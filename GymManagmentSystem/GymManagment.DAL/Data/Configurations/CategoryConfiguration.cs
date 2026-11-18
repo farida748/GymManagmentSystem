@@ -8,7 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GymManagment.DAL.Configurations
+namespace GymManagment.DAL.Data.Configurations
 {
     internal class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
