@@ -1,4 +1,5 @@
-﻿using GymManagment.BLL.Services.Interfaces;
+﻿using GymManagment.BLL.Services.Attachment;
+using GymManagment.BLL.Services.Interfaces;
 using GymManagment.BLL.ViewModels.MemberViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -9,12 +10,31 @@ namespace GymManagment.PL.Controllers
     public class MembersController : Controller
     {
         private readonly IMemberService _memberservice;
+        private readonly IAttachmentService _attachmentService;
 
         //Get BaseUrl/Members/Index
         //Index list all members
-        public MembersController(IMemberService memberService)
+        public MembersController(IMemberService memberService,IAttachmentService attachmentService)
         {
             _memberservice = memberService;
+            _attachmentService = attachmentService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Picture(int id)
+        {
+            var member = await _memberservice.GetMembersDetailsByIdAsync(id, CancellationToken.None);
+            if(member is null || string.IsNullOrWhiteSpace(member.Photo))
+            {
+                return NotFound();
+            }
+            var result = _attachmentService.GetFile(member.Photo, "MembersPhoto");
+            if(result is null)
+            {
+                return NotFound();
+            }
+            return File(result.Value.stream, result.Value.ContentType);
+
         }
         public async Task<IActionResult> Index(CancellationToken ct)
         {

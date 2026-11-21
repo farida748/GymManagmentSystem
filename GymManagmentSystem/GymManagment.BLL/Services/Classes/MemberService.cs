@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GymManagment.BLL.Common;
+using GymManagment.BLL.Services.Attachment;
 using GymManagment.BLL.Services.Interfaces;
 using GymManagment.BLL.ViewModels.MemberViewModel;
 using GymManagment.DAL.Data.Models;
@@ -11,6 +12,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GymManagment.BLL.Services.Classes
 {
@@ -18,10 +20,12 @@ namespace GymManagment.BLL.Services.Classes
     {
         private readonly IUnitofWork _unitofWork;
         private readonly IMapper _mapper;
+        private readonly IAttachmentService _attachmentService;
 
-        public MemberService(IUnitofWork unitofWork , IMapper mapper) {
+        public MemberService(IUnitofWork unitofWork , IMapper mapper,IAttachmentService attachmentService) {
            _unitofWork = unitofWork;
            _mapper = mapper;
+           _attachmentService = attachmentService;
         }
 
         public async Task<Result> CreateMemberAsync(CreateMemberViewModel member, CancellationToken cancellationToken = default)
@@ -29,12 +33,25 @@ namespace GymManagment.BLL.Services.Classes
             var emailExist = await _unitofWork.GetRepository<Member>().AnyAsync(x => x.Email == member.Email, cancellationToken);
             var phoneExist = await _unitofWork.GetRepository<Member>().AnyAsync(x => x.Phone == member.Phone, cancellationToken);
             if (emailExist || phoneExist) return Result.Fail("Email or phone number already exists");
+            var storedPhotoName = await _attachmentService.UploadAsync(
+                         member.PhotoFile.OpenReadStream(),
+                    member.PhotoFile.FileName,
+                      "MembersPhoto");
 
+            if (string.IsNullOrWhiteSpace(storedPhotoName.ToString())) return Result.Fail("Image is Un Reachabel");
 
             var members = _mapper.Map<CreateMemberViewModel, Member>(member);
+            members.Photo = storedPhotoName.ToString();
             _unitofWork.GetRepository<Member>().Add(members);
             var result=await _unitofWork.SaveChangesAsync(cancellationToken);
-            return result > 0 ? Result.Ok() : Result.Fail("Failed to create member")  ;
+            
+                if (result > 0) {
+                return Result.Ok();
+                    } 
+            else {
+                _attachmentService.Delete(storedPhotoName.ToString(), "MembersPhoto");
+                return Result.Fail("Failed to create member");
+            };
 
         }
 

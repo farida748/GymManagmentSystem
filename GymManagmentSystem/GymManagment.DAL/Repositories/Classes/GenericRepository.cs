@@ -63,7 +63,11 @@ namespace GymManagment.DAL.Repositories.Classes
 
         public async Task<TEntity?> GetByIdAsync(int id, CancellationToken ct = default) => 
             await _dbSet.FindAsync([id], ct);
-        
+
+        public async Task<int> GetCountAsync(Expression<Func<TEntity, bool>>? condition = null, CancellationToken cancellationToken = default)
+        {
+           return condition == null ?await _dbSet.AsNoTracking().CountAsync(cancellationToken) : await _dbSet.AsNoTracking().CountAsync(condition, cancellationToken);
+        }
 
         public void Update(TEntity entity)
         {

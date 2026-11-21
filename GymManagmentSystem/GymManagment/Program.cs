@@ -1,10 +1,13 @@
 using GymManagment.BLL;
+using GymManagment.BLL.Services.Attachment;
 using GymManagment.BLL.Services.Classes;
 using GymManagment.BLL.Services.Interfaces;
 using GymManagment.DAL.Data.DbContexts;
 using GymManagment.DAL.Repositories.Classes;
 using GymManagment.DAL.Repositories.Interfaces;
+using GymManagment.PL;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
 
 
 namespace GymManagment
@@ -28,9 +31,12 @@ namespace GymManagment
             builder.Services.AddScoped<ISessionRepository, SessionRepository>();
             builder.Services.AddScoped<IPlanService, PlanService>();
             builder.Services.AddScoped<ITrainerService, TrainerService>();
+            builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+            builder.Services.AddScoped<IAttachmentService, AttachmentService>();
             builder.Services.AddAutoMapper(m => m.AddProfile(new MappingProfile()));
 
             var app = builder.Build();
+            var seefingTask = app.MigrationAndSeedingData();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

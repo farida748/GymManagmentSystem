@@ -13,5 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GymManagment.DAL\GymManagment.DAL.csproj" />
   </ItemGroup>
-
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 </Project>
