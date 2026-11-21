@@ -33,26 +33,33 @@ namespace GymManagment.BLL.Services.Classes
             var emailExist = await _unitofWork.GetRepository<Member>().AnyAsync(x => x.Email == member.Email, cancellationToken);
             var phoneExist = await _unitofWork.GetRepository<Member>().AnyAsync(x => x.Phone == member.Phone, cancellationToken);
             if (emailExist || phoneExist) return Result.Fail("Email or phone number already exists");
-            var storedPhotoName = await _attachmentService.UploadAsync(
-                         member.PhotoFile.OpenReadStream(),
-                    member.PhotoFile.FileName,
-                      "MembersPhoto");
 
-            if (string.IsNullOrWhiteSpace(storedPhotoName.ToString())) return Result.Fail("Image is Un Reachabel");
+            if (member.PhotoFile is null || member.PhotoFile.Length == 0)
+                return Result.Fail("Photo is required");
 
-            var members = _mapper.Map<CreateMemberViewModel, Member>(member);
-            members.Photo = storedPhotoName.ToString();
-            _unitofWork.GetRepository<Member>().Add(members);
-            var result=await _unitofWork.SaveChangesAsync(cancellationToken);
-            
-                if (result > 0) {
+            await using var photoStream = member.PhotoFile.OpenReadStream();
+            var uploadResult = await _attachmentService.UploadAsync(
+                photoStream,
+                member.PhotoFile.FileName,
+                "MembersPhoto",
+                cancellationToken);
+
+            if (!uploadResult.Success || string.IsNullOrWhiteSpace(uploadResult.Data))
+                return Result.Fail(uploadResult.Error ?? "Failed to upload photo");
+
+            var storedPhotoName = uploadResult.Data;
+
+            var newMember = _mapper.Map<CreateMemberViewModel, Member>(member);
+            newMember.Photo = storedPhotoName;
+
+            _unitofWork.GetRepository<Member>().Add(newMember);
+            var result = await _unitofWork.SaveChangesAsync(cancellationToken);
+
+            if (result > 0)
                 return Result.Ok();
-                    } 
-            else {
-                _attachmentService.Delete(storedPhotoName.ToString(), "MembersPhoto");
-                return Result.Fail("Failed to create member");
-            };
 
+            _attachmentService.Delete(storedPhotoName, "MembersPhoto");
+            return Result.Fail("Failed to create member");
         }
 
         public async Task<IEnumerable<MemberViewModel>> GetAllMembersAsync(CancellationToken ct = default)
